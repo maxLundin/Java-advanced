@@ -1,0 +1,4 @@
+Created-By: maxLundin
+Manifest-Version: 1.0
+Main-Class: ru.ifmo.rain.lundin.implementor.Implementor
+Class-Path: java-advanced-2019/artifacts/info.kgeorgiy.java.advanced.implementor.jar
