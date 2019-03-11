@@ -36,7 +36,7 @@ public class Implementor implements JarImpler {
     /**
      * A set of implemented {@link Constructor}s and {@link Method}s of {@link Implementor#classname}
      */
-    private Set<Pair<String, String>> functions;
+    private Set<String> functions;
 
     /**
      * Creates a directory according to class package and path as a suffix
@@ -207,27 +207,26 @@ public class Implementor implements JarImpler {
      * @param foo {@link Function>} predicate which you think a function should meet
      */
     private void implementMethod(Executable exe, Function<Integer, Boolean> foo) {
-        StringBuilder decl = new StringBuilder();
-        StringBuilder body = new StringBuilder();
+        StringBuilder funkCode = new StringBuilder();
         int mod = exe.getModifiers();
         if (!foo.apply(mod)) {
             return;
         }
         mod = mod & (Modifier.classModifiers() ^ Modifier.ABSTRACT);
-        decl.append(Modifier.toString(mod))
+        funkCode.append(Modifier.toString(mod))
                 .append(" ")
                 .append(getReturn(exe))
                 .append(" ")
                 .append((exe instanceof Method ? exe.getName() : classname.getSimpleName() + "Impl"))
                 .append(" ")
                 .append(getArguments(exe))
-                .append(getThrowing(exe));
-        body.append("{")
+                .append(getThrowing(exe))
+                .append("{")
                 .append(System.lineSeparator())
                 .append(getMethodBody(exe))
                 .append("}")
                 .append(System.lineSeparator());
-        functions.add(new Pair<>(decl.toString(), body.toString()));
+        functions.add(funkCode.toString());
     }
 
     /**
@@ -317,8 +316,8 @@ public class Implementor implements JarImpler {
             code.append(getHeader(className));
             implementMethods();
 
-            for (Pair<String, String> pair : functions) {
-                code.append(pair.getFirst()).append(pair.getSecond());
+            for (String func : functions) {
+                code.append(func);
             }
             code.append("}");
             outFile.write(code.toString());

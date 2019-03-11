@@ -33,29 +33,40 @@ function kgeorgiy(){
     IS_TEST="false"
     STUDENT="lundin"
     JAVADOC="false"
-
-
-    if ! [[ -d "java-advanced-2019" ]]; then
-        echo doesnt exist
-        echo cloning repo
-        kgeorgiy_clone
-        STATUS_CLONE="${?}"
-        if [[ "$STATUS_CLONE" != "0" ]]; then
-            echo aborting
-            return 1
-        fi
-    fi
+    CREATE_JAR="false"
 
     while [[ $# -gt 0 ]]
     do
         case "$1" in
+        	-jar)
+				CREATE_JAR="true"
+				shift
+				break
+				;;
+        	--help)
+				echo Usage:
+				echo kgeorgiy "[launch options]"
+				echo
+				echo where options include:
+				echo
+				echo no options to test your task
+				echo -doc create javadoc for
+				echo -test to test your hw 
+				echo 		your file should include "main()"
+				echo -ou only update kgeorgiy repo
+				echo -u update and run test
+				echo -add add launch options 
+				return 0
+				;;
             -test)
                 IS_TEST="true"
                 shift
+                break
                 ;;
             -doc)
                 JAVADOC="true"
                 shift
+                break
                 ;;
             -ou)
                 kgeorgiy_clone
@@ -82,6 +93,17 @@ function kgeorgiy(){
                 break
         esac
     done
+
+ 	if ! [[ -d "java-advanced-2019" ]]; then
+        echo doesnt exist
+        echo cloning repo
+        kgeorgiy_clone
+        STATUS_CLONE="${?}"
+        if [[ "$STATUS_CLONE" != "0" ]]; then
+            echo aborting
+            return 1
+        fi
+    fi
 
     echo "Enter task number"
     read number
@@ -133,10 +155,16 @@ function kgeorgiy(){
             is_hard=${hard}
         fi
 
-        if [[ ${number1} == "5" ]]; then
+        if [[ ${number1} == "5" ]] && [[ ${CREATE_JAR} == "true" ]]; then
             echo oh.. task with jar..
-            jar cfm implementor_runnable.jar ru/ifmo/rain/${STUDENT}/${PACKAGE}/MANIFEST.MF ru/ifmo/rain/${STUDENT}/implementor/Implementor.class
+            jar xf java-advanced-2019/lib/quickcheck-0.6.jar net/java/quickcheck/collection/Pair.class
+            jar xf java-advanced-2019/artifacts/info.kgeorgiy.java.advanced.implementor.jar info/kgeorgiy/java/advanced/implementor/Impler.class info/kgeorgiy/java/advanced/implementor/JarImpler.class info/kgeorgiy/java/advanced/implementor/ImplerException.class
+            jar cfm implementor_runnable.jar ru/ifmo/rain/${STUDENT}/${PACKAGE}/MANIFEST.MF ru/ifmo/rain/${STUDENT}/implementor/Implementor.class info/kgeorgiy/java/advanced/implementor/*.class net/java/quickcheck/collection/*.class
             echo jar created
+            rm -rf info
+            rm -rf net
+            java -jar implementor_runnable.jar -jar info.kgeorgiy.java.advanced.implementor.Impler out.jar
+            return 0
         fi
     fi
     if [[ ${JAVADOC} == "true" ]]; then
@@ -144,7 +172,7 @@ function kgeorgiy(){
         folder_doc+="doc/"
         mkdir ${folder_doc}
 
-        javadoc ${jar_include} ru/ifmo/rain/${STUDENT}/${PACKAGE}/${PROGNAME}.java -d ${folder_doc}
+        javadoc ${jar_include} ru/ifmo/rain/${STUDENT}/${PACKAGE}/${PROGNAME}.java -d ${folder_doc} $@
         return 0
     fi
 
@@ -153,5 +181,5 @@ function kgeorgiy(){
         return 0
     fi
 
-    java ${jar_include} -p ".:java-advanced-2019/artifacts/:java-advanced-2019/lib/" -m info.kgeorgiy.java.advanced.${PACKAGE} ${is_hard} ru.ifmo.rain.${STUDENT}.${PACKAGE}.${PROGNAME}
+    java ${jar_include} -p ".:java-advanced-2019/artifacts/:java-advanced-2019/lib/" -m info.kgeorgiy.java.advanced.${PACKAGE} ${is_hard} ru.ifmo.rain.${STUDENT}.${PACKAGE}.${PROGNAME} $@
 }
