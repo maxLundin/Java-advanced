@@ -157,12 +157,10 @@ function kgeorgiy(){
 
         if [[ ${number1} == "5" ]] && [[ ${CREATE_JAR} == "true" ]]; then
             echo oh.. task with jar..
-            jar xf java-advanced-2019/lib/quickcheck-0.6.jar net/java/quickcheck/collection/Pair.class
             jar xf java-advanced-2019/artifacts/info.kgeorgiy.java.advanced.implementor.jar info/kgeorgiy/java/advanced/implementor/Impler.class info/kgeorgiy/java/advanced/implementor/JarImpler.class info/kgeorgiy/java/advanced/implementor/ImplerException.class
-            jar cfm implementor_runnable.jar ru/ifmo/rain/${STUDENT}/${PACKAGE}/MANIFEST.MF ru/ifmo/rain/${STUDENT}/implementor/Implementor.class info/kgeorgiy/java/advanced/implementor/*.class net/java/quickcheck/collection/*.class
+            jar cfm implementor_runnable.jar ru/ifmo/rain/${STUDENT}/${PACKAGE}/MANIFEST.MF ru/ifmo/rain/${STUDENT}/implementor/Implementor.class info/kgeorgiy/java/advanced/implementor/*.class
             echo jar created
             rm -rf info
-            rm -rf net
             java -jar implementor_runnable.jar -jar info.kgeorgiy.java.advanced.implementor.Impler out.jar
             return 0
         fi
@@ -172,7 +170,7 @@ function kgeorgiy(){
         folder_doc+="doc/"
         mkdir ${folder_doc}
 
-        javadoc ${jar_include} ru/ifmo/rain/${STUDENT}/${PACKAGE}/${PROGNAME}.java -d ${folder_doc} $@
+        javadoc ${jar_include} -link https://docs.oracle.com/en/java/javase/11/docs/api/ ru/ifmo/rain/${STUDENT}/${PACKAGE}/${PROGNAME}.java -d ${folder_doc} $@
         return 0
     fi
 
@@ -181,5 +179,5 @@ function kgeorgiy(){
         return 0
     fi
 
-    java ${jar_include} -p ".:java-advanced-2019/artifacts/:java-advanced-2019/lib/" -m info.kgeorgiy.java.advanced.${PACKAGE} ${is_hard} ru.ifmo.rain.${STUDENT}.${PACKAGE}.${PROGNAME} $@
+    java -Dfile.encoding=UTF-8 ${jar_include} -p ".:java-advanced-2019/artifacts/:java-advanced-2019/lib/" -m info.kgeorgiy.java.advanced.${PACKAGE} ${is_hard} ru.ifmo.rain.${STUDENT}.${PACKAGE}.${PROGNAME} $@
 }

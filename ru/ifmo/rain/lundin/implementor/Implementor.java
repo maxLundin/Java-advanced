@@ -204,7 +204,7 @@ public class Implementor implements JarImpler {
      * Implements given {@link Executable} exe and adds its signature and body to {@link Implementor#functions}
      *
      * @param exe {@link Executable} which you want to implement
-     * @param foo {@link Function>} predicate which you think a function should meet
+     * @param foo {@link Function} predicate which you think a function should meet
      */
     private void implementMethod(Executable exe, Function<Integer, Boolean> foo) {
         StringBuilder funkCode = new StringBuilder();
@@ -233,7 +233,7 @@ public class Implementor implements JarImpler {
      * Implements an array of {@link Executable}
      *
      * @param mas array of {@link Executable} which you want to implement
-     * @param foo {@link Function>} predicate which you think a function should meet
+     * @param foo {@link Function} predicate which you think a function should meet
      */
     private void implement(Executable[] mas, Function<Integer, Boolean> foo) {
         for (Executable exe : mas) {
@@ -359,14 +359,17 @@ public class Implementor implements JarImpler {
             implement(className, temp);
             file = createDirectory(className, temp);
             JavaCompiler jc = ToolProvider.getSystemJavaCompiler();
-            String[] args = new String[3];
-            args[0] = "-cp";
-            args[1] = temp.toString() + File.pathSeparator + System.getProperty("java.class.path");
-            args[2] = file.toString();
+            if (jc == null) {
+                throw new ImplerException("No system Java compiler");
+            }
+            String[] args = new String[]{
+                    "-cp", temp.toString() + File.pathSeparator + System.getProperty("java.class.path"), file.toString(), "-encoding", "utf8"
+            };
+
             if (jc.run(null, null, null, args) != 0) {
                 throw new ImplerException("Can't compile generated class");
             }
-            jstr.putNextEntry(new ZipEntry(className.getCanonicalName().replace('.', File.separatorChar) + "Impl.class"));
+            jstr.putNextEntry(new ZipEntry(className.getCanonicalName().replace('.', '/') + "Impl.class"));
             Files.copy(Paths.get(file.getParent().toString() + File.separatorChar + classname.getSimpleName() + "Impl.class"), jstr);
         } catch (IOException e) {
             e.printStackTrace();
