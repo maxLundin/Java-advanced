@@ -34,8 +34,22 @@ public class ArraySet<T> extends AbstractSet<T> implements NavigableSet<T> {
         return Collections.binarySearch(elements, t, cmp);
     }
 
+//    private <T extends Comparable<T>> int findRealIndexCmp(T t) {
+//        return Collections.binarySearch(elements, t, new Comparator<T>() {
+//            @Override
+//            public int compare(T t, T t1) {
+//                return t.compareTo(t1);
+//            }
+//        });
+//    }
+//
     private int findIndex(T t, boolean firstORsecond, boolean include) {
-        int ind = findRealIndex(t);
+        int ind;
+//        if (cmp == null) {
+//            ind = findRealIndexCmp(t);
+//        } else {
+            ind = findRealIndex(t);
+//        }
         if (ind >= 0) {
             return ind;
         } else {
@@ -153,14 +167,17 @@ public class ArraySet<T> extends AbstractSet<T> implements NavigableSet<T> {
     @Override
     public NavigableSet<T> subSet(T t, boolean b, T t1, boolean b1) {
         int top, down;
+
         top = findIndex(t, true, b);
         down = findIndex(t1, false, b1);
+
         if (!b) {
             ++top;
         }
         if (!b1) {
             --down;
         }
+
         if (top <= down)
             return new ArraySet<>(elements.subList(top, down + 1), cmp);
         else {
@@ -193,7 +210,7 @@ public class ArraySet<T> extends AbstractSet<T> implements NavigableSet<T> {
 
     @Override
     public SortedSet<T> subSet(T t, T e1) {
-        if (cmp == null || cmp.compare(t, e1) > 0) {
+        if (cmp.compare(t, e1) > 0) {
             throw new IllegalArgumentException();
         }
         return subSet(t, true, e1, false);
