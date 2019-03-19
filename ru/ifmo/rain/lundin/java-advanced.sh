@@ -38,10 +38,18 @@ function kgeorgiy(){
     while [[ $# -gt 0 ]]
     do
         case "$1" in
-        	-jar)
+
+			-jar)
 				CREATE_JAR="true"
 				shift
 				break
+				;;
+			-git)
+				git add .
+				shift
+				git commit -m \"$@\"
+				git push
+				return 0
 				;;
         	--help)
 				echo Usage:
@@ -50,6 +58,7 @@ function kgeorgiy(){
 				echo where options include:
 				echo
 				echo no options to test your task
+				echo -jar to create jar
 				echo -doc create javadoc for
 				echo -test to test your hw 
 				echo 		your file should include "main()"
@@ -179,5 +188,5 @@ function kgeorgiy(){
         return 0
     fi
 
-    java -Dfile.encoding=UTF-8 ${jar_include} -p ".:java-advanced-2019/artifacts/:java-advanced-2019/lib/" -m info.kgeorgiy.java.advanced.${PACKAGE} ${is_hard} ru.ifmo.rain.${STUDENT}.${PACKAGE}.${PROGNAME} $@
+    java ${jar_include} -p ".:java-advanced-2019/artifacts/:java-advanced-2019/lib/" -m info.kgeorgiy.java.advanced.${PACKAGE} ${is_hard} ru.ifmo.rain.${STUDENT}.${PACKAGE}.${PROGNAME} $@
 }

@@ -2,7 +2,6 @@ package ru.ifmo.rain.lundin.implementor;
 
 import info.kgeorgiy.java.advanced.implementor.ImplerException;
 import info.kgeorgiy.java.advanced.implementor.JarImpler;
-import net.java.quickcheck.collection.Pair;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
@@ -25,6 +24,8 @@ import java.util.jar.Attributes;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
+
+import static java.net.IDN.toUnicode;
 
 public class Implementor implements JarImpler {
 
@@ -320,7 +321,7 @@ public class Implementor implements JarImpler {
                 code.append(func);
             }
             code.append("}");
-            outFile.write(code.toString());
+            outFile.write(toUnicode(code.toString()));
         } catch (IOException e) {
             e.printStackTrace();
         }

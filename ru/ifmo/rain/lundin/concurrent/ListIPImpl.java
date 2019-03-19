@@ -10,16 +10,23 @@ import java.util.stream.Stream;
 
 public class ListIPImpl implements ListIP {
 
-    private <T, U> U doParallel(int numThreads, List<? extends T> values, Function<Stream<? extends T>, ? extends U> func, Function<Stream<? extends U>, ? extends U> func1) throws InterruptedException {
+    private <T> void checkArguments(int numThreads, List<? extends T> values) throws NoSuchElementException, IllegalArgumentException {
         if (values.size() == 0) {
-            throw new InterruptedException("List is empty!");
+            throw new NoSuchElementException("List is empty!");
         }
         if (numThreads == 0) {
-            throw new InterruptedException("Cant't perform operation with 0 threads!");
+            throw new IllegalArgumentException("Cant't perform operation with 0 threads!");
         }
+    }
+
+    private <T, U> U doParallel(int numThreads, List<? extends T> values, Function<Stream<? extends T>, ? extends U> func, Function<Stream<? extends U>, ? extends U> func1) throws InterruptedException, IllegalArgumentException {
+
+        checkArguments(numThreads, values);
 
         numThreads = Math.min(numThreads, values.size());
+//                (values.size() > 2500 ? values.size() / 2500 : 1));
 
+//        numThreads = 1;
         ArrayList<Thread> treads = new ArrayList<>(numThreads);
 
         int blockSize = values.size() / numThreads;
@@ -61,6 +68,14 @@ public class ListIPImpl implements ListIP {
         return func1.apply(results.stream());
     }
 
+    private <T, U> U doParallelJobWithDefaultCase(int numThreads, List<? extends T> values, Function<Stream<? extends T>, ? extends U> func, Function<Stream<? extends U>, ? extends U> func1, U defaultCase) throws InterruptedException {
+        try {
+            return doParallel(numThreads, values, func, func1);
+        } catch (IllegalArgumentException | NoSuchElementException e) {
+            return defaultCase;
+        }
+    }
+
     /**
      * Join values to string.
      *
@@ -71,7 +86,7 @@ public class ListIPImpl implements ListIP {
      */
     @Override
     public String join(int threads, List<?> values) throws InterruptedException {
-        return doParallel(threads, values, stream -> stream.map(Object::toString).collect(Collectors.joining()), stream -> stream.collect(Collectors.joining()));
+        return doParallelJobWithDefaultCase(threads, values, stream -> stream.map(Object::toString).collect(Collectors.joining()), stream -> stream.collect(Collectors.joining()), "");
     }
 
     /**
@@ -85,10 +100,11 @@ public class ListIPImpl implements ListIP {
      */
     @Override
     public <T> List<T> filter(int threads, List<? extends T> values, Predicate<? super T> predicate) throws InterruptedException {
-        return doParallel(threads, values, stream -> stream.filter(predicate).collect(Collectors.toList()), stream -> stream.flatMap(List::stream).collect(Collectors.toList()));
+        return doParallelJobWithDefaultCase(threads, values, stream -> stream.filter(predicate).collect(Collectors.toList()), stream -> stream.flatMap(List::stream).collect(Collectors.toList()), List.of());
     }
 
     /**
+     * type of variable create an object java
      * Mas values.
      *
      * @param threads  number or concurrent threads.
@@ -99,7 +115,7 @@ public class ListIPImpl implements ListIP {
      */
     @Override
     public <T, U> List<U> map(int threads, List<? extends T> values, Function<? super T, ? extends U> function) throws InterruptedException {
-        return doParallel(threads, values, stream -> stream.map(function).collect(Collectors.toList()), stream -> stream.flatMap(List::stream).collect(Collectors.toList()));
+        return doParallelJobWithDefaultCase(threads, values, stream -> stream.map(function).collect(Collectors.toList()), stream -> stream.flatMap(List::stream).collect(Collectors.toList()), List.of());
     }
 
 
@@ -115,7 +131,8 @@ public class ListIPImpl implements ListIP {
      * @throws java.util.NoSuchElementException if not values are given.
      */
     @Override
-    public <T> T maximum(int threads, List<? extends T> values, Comparator<? super T> comparator) throws InterruptedException {
+    public <T> T maximum(int threads, List<? extends T> values, Comparator<? super T> comparator) throws InterruptedException, NoSuchElementException {
+        checkArguments(threads, values);
         return doParallel(threads, values, stream -> stream.max(comparator).orElse(null), stream -> stream.max(comparator).orElse(null));
     }
 
@@ -131,7 +148,8 @@ public class ListIPImpl implements ListIP {
      * @throws java.util.NoSuchElementException if not values are given.
      */
     @Override
-    public <T> T minimum(int threads, List<? extends T> values, Comparator<? super T> comparator) throws InterruptedException {
+    public <T> T minimum(int threads, List<? extends T> values, Comparator<? super T> comparator) throws InterruptedException, NoSuchElementException {
+        checkArguments(threads, values);
         return doParallel(threads, values, stream -> stream.min(comparator).orElse(null), stream -> stream.min(comparator).orElse(null));
     }
 
@@ -147,7 +165,7 @@ public class ListIPImpl implements ListIP {
      */
     @Override
     public <T> boolean all(int threads, List<? extends T> values, Predicate<? super T> predicate) throws InterruptedException {
-        return doParallel(threads, values, stream -> stream.allMatch(predicate), stream -> stream.allMatch(o -> o));
+        return doParallelJobWithDefaultCase(threads, values, stream -> stream.allMatch(predicate), stream -> stream.allMatch(o -> o), true);
     }
 
     /**
@@ -162,6 +180,6 @@ public class ListIPImpl implements ListIP {
      */
     @Override
     public <T> boolean any(int threads, List<? extends T> values, Predicate<? super T> predicate) throws InterruptedException {
-        return doParallel(threads, values, stream -> stream.anyMatch(predicate), stream -> stream.anyMatch(o -> o));
+        return doParallelJobWithDefaultCase(threads, values, stream -> stream.anyMatch(predicate), stream -> stream.anyMatch(o -> o), false);
     }
 }
