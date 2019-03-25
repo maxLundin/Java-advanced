@@ -28,6 +28,20 @@ function kgeorgiy_clone(){
     return 0
 }
 
+function kgeorgiy_compile(){
+    echo "compiling ru/ifmo/rain/$1/$2/"
+    echo
+    javac ru/ifmo/rain/$1/$2/*.java $3 $4
+    STATUS="${?}"
+    if [[ "$STATUS" != "0" ]]; then
+        echo compilation error
+        return 1
+    fi
+    echo
+    echo compiled
+    return 0
+}
+
 function kgeorgiy(){
 
     IS_TEST="false"
@@ -39,34 +53,34 @@ function kgeorgiy(){
     do
         case "$1" in
 
-			-jar)
-				CREATE_JAR="true"
-				shift
-				break
-				;;
-			-git)
-				git add .
-				shift
-				git commit -m \"$@\"
-				git push
-				return 0
-				;;
-        	--help)
-				echo Usage:
-				echo kgeorgiy "[launch options]"
-				echo
-				echo where options include:
-				echo
-				echo no options to test your task
-				echo -jar to create jar
-				echo -doc create javadoc for
-				echo -test to test your hw 
-				echo 		your file should include "main()"
-				echo -ou only update kgeorgiy repo
-				echo -u update and run test
-				echo -add add launch options 
-				return 0
-				;;
+      -jar)
+        CREATE_JAR="true"
+        shift
+        break
+        ;;
+      -git)
+        git add .
+        shift
+        git commit -m \"$@\"
+        git push
+        return 0
+        ;;
+       --help)
+        echo Usage:
+        echo kgeorgiy "[launch options]"
+        echo
+        echo where options include:
+        echo
+        echo no options to test your task
+        echo -jar to create jar
+        echo -doc create javadoc for
+        echo -test to test your hw 
+        echo     your file should include "main()"
+        echo -ou only update kgeorgiy repo
+        echo -u update and run test
+        echo -add add launch options 
+        return 0
+        ;;
             -test)
                 IS_TEST="true"
                 shift
@@ -103,7 +117,7 @@ function kgeorgiy(){
         esac
     done
 
- 	if ! [[ -d "java-advanced-2019" ]]; then
+   if ! [[ -d "java-advanced-2019" ]]; then
         echo doesnt exist
         echo cloning repo
         kgeorgiy_clone
@@ -146,16 +160,49 @@ function kgeorgiy(){
     hard=$(sed ${number} -n launch_options.data | awk -F ":" '{print $3}')
     PROGNAME=$(sed ${number} -n launch_options.data | awk -F ":" '{print $4}')
 
-    echo compiling
-    echo
-    javac ru/ifmo/rain/${STUDENT}/${PACKAGE}/*.java ${jar_include}
+
+    kgeorgiy_compile ${STUDENT} ${PACKAGE} ${jar_include}
     STATUS="${?}"
+
     if [[ "$STATUS" != "0" ]]; then
-        echo compilation error
         return 1
     fi
-    echo
-    echo compiled
+
+    if [[ ${number1} == "8" ]]; then
+        number2="7p"
+        PACKAGE1=$(sed ${number2} -n launch_options.data | awk -F ":" '{print $1}')
+        PROGNAME1=$(sed ${number2} -n launch_options.data | awk -F ":" '{print $4}')
+
+        kgeorgiy_compile ${STUDENT} ${PACKAGE1} ${jar_include}
+        STATUS="${?}"
+
+        if [[ "$STATUS" != "0" ]]; then
+            return 1
+        fi
+
+        if [[ ${JAVADOC} == "true" ]]; then
+            folder_doc=${number1}
+            folder_doc+="doc/"
+            mkdir ${folder_doc}
+
+            javadoc ${jar_include} -link https://docs.oracle.com/en/java/javase/11/docs/api/ ru/ifmo/rain/${STUDENT}/${PACKAGE}/${PROGNAME}.java -d ${folder_doc} $@
+            return 0
+        fi
+
+        if [[ ${IS_TEST} == "true" ]]; then
+            java ${jar_include} -p ".:java-advanced-2019/artifacts/:java-advanced-2019/lib/" ru.ifmo.rain.${STUDENT}.${PACKAGE}.${PROGNAME} $@
+            return 0
+        fi
+
+        if [[ ${is_hard} == [Ee]* ]]; then
+            is_hard=${easy}
+        else
+            is_hard=${hard}
+        fi
+
+        java ${jar_include} -p ".:java-advanced-2019/artifacts/:java-advanced-2019/lib/" -m info.kgeorgiy.java.advanced.${PACKAGE} ${is_hard} ru.ifmo.rain.${STUDENT}.${PACKAGE}.${PROGNAME}","ru.ifmo.rain.${STUDENT}.${PACKAGE1}.${PROGNAME1} $@
+        return 0
+    fi
 
     if [[ ${IS_TEST} != "true" ]] && [[ ${JAVADOC} != "true" ]]; then
         if [[ ${is_hard} == [Ee]* ]]; then
@@ -189,4 +236,5 @@ function kgeorgiy(){
     fi
 
     java ${jar_include} -p ".:java-advanced-2019/artifacts/:java-advanced-2019/lib/" -m info.kgeorgiy.java.advanced.${PACKAGE} ${is_hard} ru.ifmo.rain.${STUDENT}.${PACKAGE}.${PROGNAME} $@
+    return 0
 }

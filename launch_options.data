@@ -3,4 +3,8 @@ arrayset:SortedSet:NavigableSet:ArraySet
 student:StudentQuery:StudentGroupQuery:StudentDB
 implementor:interface:class:Implementor
 implementor:jar-interface:jar-class:Implementor
+
 concurrent:scalar:list:ListIPImpl
+mapper:scalar:list:ParallelMapperImpl
+
+

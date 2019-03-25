@@ -25,7 +25,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 
-import static java.net.IDN.toUnicode;
+//import static java.net.IDN.toUnicode;
 
 public class Implementor implements JarImpler {
 
@@ -40,7 +40,7 @@ public class Implementor implements JarImpler {
     private Set<String> functions;
 
     /**
-     * Creates a directory according to class package and path as a suffix
+     * Creates directory according to class package and path as a suffix
      *
      * @param className {@link Class} a class which package directories you want to create
      * @param path      {@link Path} path as a suffix to className's package
@@ -208,6 +208,9 @@ public class Implementor implements JarImpler {
      * @param foo {@link Function} predicate which you think a function should meet
      */
     private void implementMethod(Executable exe, Function<Integer, Boolean> foo) {
+
+//        System.err.println(exe);
+
         StringBuilder funkCode = new StringBuilder();
         int mod = exe.getModifiers();
         if (!foo.apply(mod)) {
@@ -229,6 +232,7 @@ public class Implementor implements JarImpler {
                 .append(System.lineSeparator());
         functions.add(funkCode.toString());
     }
+
 
     /**
      * Implements an array of {@link Executable}
@@ -254,7 +258,7 @@ public class Implementor implements JarImpler {
             int num = functions.size();
             implement(classname.getDeclaredConstructors(), x -> !Modifier.isPrivate(x));
             if (num == functions.size()) {
-                throw new ImplerException("No constructors in give class");
+                throw new ImplerException("No constructors in class");
             }
         }
         implement(classname.getMethods(), Modifier::isAbstract);
@@ -283,11 +287,31 @@ public class Implementor implements JarImpler {
     }
 
     /**
+     * Converts String to Unicode Format;
+     *
+     * @param input string you want to convert to utf8
+     * @return converted String
+     */
+    private String toUnicode(String input) {
+        StringBuilder b = new StringBuilder();
+
+        for (char c : input.toCharArray()) {
+            if (c >= 128)
+                b.append("\\u").append(String.format("%04X", (int) c));
+            else
+                b.append(c);
+        }
+
+        return b.toString();
+    }
+
+    /**
      * Implements a class
      * Output file is @param classname + Impl.java
      * Puts output file to @param <code>root</code> / @param <code>className</code> package
      * initialises {@link Implementor#functions} with empty {@link java.util.HashSet}
      * initialises {@link Implementor#classname} with @param className
+     * uses {@link java.net.IDN#toUnicode} to synchronize encoding
      *
      * @param className a {@link Class} you want to implement
      * @param root      {@link Path} - a prefix in which generated .java file will be created
@@ -364,7 +388,7 @@ public class Implementor implements JarImpler {
                 throw new ImplerException("No system Java compiler");
             }
             String[] args = new String[]{
-                    "-cp", temp.toString() + File.pathSeparator + System.getProperty("java.class.path"), file.toString(), "-encoding", "utf8"
+                    "-cp", temp.toString() + File.pathSeparator + System.getProperty("java.class.path"), file.toString(), "-encoding", "cp866"
             };
 
             if (jc.run(null, null, null, args) != 0) {
