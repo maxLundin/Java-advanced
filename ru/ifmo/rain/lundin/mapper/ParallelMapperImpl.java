@@ -50,7 +50,7 @@ public class ParallelMapperImpl implements ParallelMapper {
 
     }
 
-    class Counter {
+    private class Counter {
         Counter(int value) {
             val = value;
         }
@@ -62,7 +62,7 @@ public class ParallelMapperImpl implements ParallelMapper {
         int val;
     }
 
-    class Task {
+    private class Task {
         Task(Runnable runnable, Counter counter) {
             this.runnable = runnable;
             this.counter = counter;
