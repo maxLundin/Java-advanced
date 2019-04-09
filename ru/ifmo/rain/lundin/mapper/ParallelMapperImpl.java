@@ -1,4 +1,3 @@
-
 package ru.ifmo.rain.lundin.mapper;
 
 import info.kgeorgiy.java.advanced.mapper.ParallelMapper;
@@ -37,7 +36,6 @@ public class ParallelMapperImpl implements ParallelMapper {
             while (queue.isEmpty()) {
                 queue.wait();
             }
-
             runnable = queue.poll();
         }
 
@@ -59,7 +57,11 @@ public class ParallelMapperImpl implements ParallelMapper {
             ++val;
         }
 
-        int val;
+        private int val;
+
+        int getVal() {
+            return val;
+        }
     }
 
     private class Task {
@@ -72,6 +74,36 @@ public class ParallelMapperImpl implements ParallelMapper {
         final Counter counter;
     }
 
+    private class TaskPool {
+        TaskPool(List<Runnable> tasks) {
+            this.counter = new Counter(0);
+            this.poolSize = tasks.size();
+            for (Runnable task : tasks) {
+                synchronized (queue) {
+                    queue.add(new Task(task, counter));
+                    if (check()) {
+                        queue.notify();
+                    }
+                }
+            }
+        }
+
+        private boolean check() {
+            return counter.val < poolSize;
+        }
+
+        void waitForWorksDone() throws InterruptedException {
+            synchronized (counter) {
+                while (check()) {
+                    counter.wait();
+                }
+            }
+        }
+
+        private int poolSize;
+        final Counter counter;
+    }
+
     /**
      * Maps function {@code f} over specified {@code args}.
      * Mapping for each element performs in parallel.
@@ -81,21 +113,17 @@ public class ParallelMapperImpl implements ParallelMapper {
     @Override
     public <T, R> List<R> map(Function<? super T, ? extends R> f, List<? extends T> args) throws InterruptedException {
         List<R> resList = new ArrayList<>(Collections.nCopies(args.size(), null));
-//        Counter tasks_done = new Counter(args.size());
-        final Counter tasks_done = new Counter(0);
+
+        List<Runnable> runnableArrayList = new ArrayList<>(args.size());
+
         for (int i = 0; i < args.size(); ++i) {
             final int final_i = i;
-            synchronized (queue) {
-                queue.add(new Task(() -> resList.set(final_i, f.apply(args.get(final_i))), tasks_done));
-                queue.notify();
-            }
+            runnableArrayList.add(() -> resList.set(final_i, f.apply(args.get(final_i))));
         }
 
-        synchronized (tasks_done) {
-            while (tasks_done.val < args.size()) {
-                tasks_done.wait();
-            }
-        }
+        TaskPool tp = new TaskPool(runnableArrayList);
+
+        tp.waitForWorksDone();
 
         return resList;
     }
@@ -111,7 +139,6 @@ public class ParallelMapperImpl implements ParallelMapper {
             try {
                 thread.join();
             } catch (InterruptedException ignored) {
-
             }
         }
     }
