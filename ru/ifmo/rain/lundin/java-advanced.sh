@@ -24,6 +24,8 @@ function kgeorgiy_clone(){
         fi
         cd ..
     fi
+    rm README.md 2>/dev/null
+    cp java-advanced-2019/README.md .
     echo ""
     return 0
 }
@@ -59,6 +61,7 @@ function kgeorgiy(){
         break
         ;;
       -git)
+		./clear 2>/dev/null
         git add .
         shift
         git commit -m \"$@\"

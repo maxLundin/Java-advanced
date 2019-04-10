@@ -40,10 +40,9 @@ public class ListIPImpl implements ListIP {
         checkArguments(numThreads, values);
 
         numThreads = Math.min(numThreads, values.size());
-//                (values.size() > 2500 ? values.size() / 2500 : 1));
 
-//        numThreads = 1;
         List<Thread> treads = new ArrayList<>(numThreads);
+
 
         int blockSize = values.size() / numThreads;
         int extra = values.size() % numThreads;

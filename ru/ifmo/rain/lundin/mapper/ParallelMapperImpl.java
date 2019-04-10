@@ -16,7 +16,7 @@ public class ParallelMapperImpl implements ParallelMapper {
         for (int i = 0; i < threads; ++i) {
             threadList.add(new Thread(() -> {
                 try {
-                    while (!Thread.interrupted()) {
+                    while (!Thread.currentThread().isInterrupted()) {
                         doJob();
                     }
                 } catch (InterruptedException ignored) {
