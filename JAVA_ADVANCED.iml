@@ -12,5 +12,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="artifacts" level="project" />
     <orderEntry type="library" name="lib" level="project" />
+    <orderEntry type="library" name="info.kgeorgiy.java.advanced.crawler" level="project" />
   </component>
 </module>
