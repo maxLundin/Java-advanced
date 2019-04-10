@@ -61,7 +61,7 @@ function kgeorgiy(){
         break
         ;;
       -git)
-		./clear 2>/dev/null
+		bash clean.sh 2>/dev/null
         git add .
         shift
         git commit -m \"$@\"
