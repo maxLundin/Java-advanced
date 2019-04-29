@@ -7,5 +7,5 @@ implementor:jar-interface:jar-class:Implementor
 concurrent:scalar:list:ListIPImpl
 mapper:scalar:list:ParallelMapperImpl
 crawler:easy:hard:WebCrawler
-
-
+hello:server:server-i18n:HelloUDPServer
+hello:client:client-i18n:HelloUDPClient

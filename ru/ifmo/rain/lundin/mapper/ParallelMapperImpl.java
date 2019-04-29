@@ -13,7 +13,7 @@ public class ParallelMapperImpl implements ParallelMapper {
     public ParallelMapperImpl(int threads) {
         threadList = new ArrayList<>(threads);
         queue = new ArrayDeque<>();
-        for (int i = 0; i < threads; ++i) {
+        for (int i = 0; i < threads; i++) {
             threadList.add(new Thread(() -> {
                 try {
                     while (!Thread.currentThread().isInterrupted()) {
@@ -54,7 +54,7 @@ public class ParallelMapperImpl implements ParallelMapper {
         }
 
         void increment() {
-            ++val;
+            val++;
         }
 
         private int val;
@@ -116,7 +116,7 @@ public class ParallelMapperImpl implements ParallelMapper {
 
         List<Runnable> runnableArrayList = new ArrayList<>(args.size());
 
-        for (int i = 0; i < args.size(); ++i) {
+        for (int i = 0; i < args.size(); i++) {
             final int final_i = i;
             runnableArrayList.add(() -> resList.set(final_i, f.apply(args.get(final_i))));
         }
