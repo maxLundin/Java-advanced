@@ -26,10 +26,10 @@ public class HelloUDPServer implements HelloServer, AutoCloseable {
     public void start(int port, int threads) {
         receiver = Executors.newSingleThreadExecutor();
         workers = Executors.newFixedThreadPool(threads);
-        int buf_size;
+        int bufSize;
         try {
             socket = new DatagramSocket(port);
-            buf_size = socket.getReceiveBufferSize();
+            bufSize = socket.getReceiveBufferSize();
         } catch (SocketException e) {
             System.err.println("Socket exception: cant create socket");
             e.printStackTrace();
@@ -38,10 +38,10 @@ public class HelloUDPServer implements HelloServer, AutoCloseable {
         receiver.submit(() -> {
             if (!socket.isClosed() && !Thread.currentThread().isInterrupted()) {
                 do {
-                    final DatagramPacket packet = HelloHelper.getDatagramPacket(buf_size);
+                    final DatagramPacket packet = HelloHelper.getDatagramPacket(bufSize);
                     try {
                         socket.receive(packet);
-                        workers.submit(() -> runnable_run(packet));
+                        workers.submit(() -> runnableRun(packet));
                     } catch (PortUnreachableException e) {
                         System.err.println("Port unreachable on socket: " + socket.toString() + " with port " + port);
                     } catch (SocketException e) {
@@ -68,14 +68,14 @@ public class HelloUDPServer implements HelloServer, AutoCloseable {
         socket.close();
     }
 
-    private void runnable_run(final DatagramPacket dp) {
+    private void runnableRun(final DatagramPacket dp) {
         final String receivedMsg = HelloHelper.getResult(dp);
         final String sendMsg = "Hello, " + receivedMsg;
         final DatagramPacket sendDatagramPacket = HelloHelper.getDatagramPacket(sendMsg.getBytes(StandardCharsets.UTF_8), dp.getSocketAddress());
         try {
             socket.send(sendDatagramPacket);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error sending package to:" + dp.getSocketAddress());
         }
     }
 

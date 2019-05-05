@@ -27,7 +27,7 @@ public class HelloUDPClient implements HelloClient {
 
         IntStream.range(0, threads).<Runnable>mapToObj(threadNumber -> () -> {
             try (DatagramSocket datagramSocket = new DatagramSocket()) {
-                datagramSocket.setSoTimeout(10);
+                datagramSocket.setSoTimeout(100);
 
                 for (int requestNumber = 0; requestNumber < requests; requestNumber++) {
                     String request = prefix.concat(threadNumber + "").concat("_").concat(requestNumber + "");
@@ -38,7 +38,7 @@ public class HelloUDPClient implements HelloClient {
                             datagramSocket.send(sendDatagramPacket);
                             datagramSocket.receive(receiveDatagramPacket);
                             final String receivedMsg = HelloHelper.getResult(receiveDatagramPacket);
-                            if (receivedMsg.endsWith(request)) {
+                            if (receivedMsg.contains(request)) {
                                 System.out.println("Requesting to " + host + ", request : " + request);
                                 System.out.println("Response from " + host + ", response : " + receivedMsg);
                                 break;
